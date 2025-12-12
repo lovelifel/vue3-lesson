@@ -23,4 +23,8 @@ class ReactiveEffect {
       activeEffect = lastEffect;
     }
   }
+
+  stop() {
+    this.active = false;
+  }
 }

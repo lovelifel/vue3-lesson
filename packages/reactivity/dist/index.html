@@ -15,11 +15,10 @@
         age: 25,
       });
       effect(() => {
-        console.log(person.name);
-        effect(() => {
-          console.log(person.name);
-        });
-        console.log(person.age);
+        app.innerHTML = `姓名 ${person.name} 年龄 ${person.age}`;
+      });
+      effect(() => {
+        app.innerHTML = `姓名 ${person.name}`;
       });
     </script>
   </body>
