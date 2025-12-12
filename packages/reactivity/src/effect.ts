@@ -8,6 +8,9 @@ export function effect(fn, options?) {
 }
 
 class ReactiveEffect {
+  _trackId = 0; //用于记录当前effect执行了几次
+  deps = [];
+  _depsLength = 0;
   public active = true; //是否开启响应
   constructor(public fn, public scheduler) {}
 
@@ -27,4 +30,9 @@ class ReactiveEffect {
   stop() {
     this.active = false;
   }
+}
+
+export function trackEffect(effect, dep) {
+  dep.set(effect, effect._trackId);
+  effect.deps[effect._depsLength++] = dep;
 }

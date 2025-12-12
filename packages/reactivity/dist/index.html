@@ -17,9 +17,9 @@
       effect(() => {
         app.innerHTML = `姓名 ${person.name} 年龄 ${person.age}`;
       });
-      effect(() => {
-        app.innerHTML = `姓名 ${person.name}`;
-      });
+      setTimeout(() => {
+        person.age = 30;
+      }, 1000);
     </script>
   </body>
 </html>

@@ -19,7 +19,7 @@ const {
   buildOptions: { name = "" },
 } = pkg;
 
-esbuild.build({
+const ctx = await esbuild.context({
   entryPoints: [entry],
   outfile: `packages/${target}/dist/${target}.${format}.js`,
   bundle: true,
@@ -28,3 +28,5 @@ esbuild.build({
   platform: "browser",
   globalName: name,
 });
+
+await ctx.watch();
