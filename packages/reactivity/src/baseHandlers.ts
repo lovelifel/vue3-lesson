@@ -14,7 +14,6 @@ export const baseHandlers = {
   },
   set(target, key, value, receiver) {
     let oldValue = target[key];
-
     let result = Reflect.set(target, key, value, receiver);
     if (oldValue !== value) {
       trigger(target, key, oldValue, value);

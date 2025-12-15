@@ -13,12 +13,18 @@
       const person = reactive({
         name: "张三",
         age: 25,
+        flag: true,
       });
       effect(() => {
-        app.innerHTML = `姓名 ${person.name} 年龄 ${person.age}`;
+        app.innerHTML = person.flag ? person.name : person.age;
+        // app.innerHTML = person.name + person.name + person.name;
       });
       setTimeout(() => {
-        person.age = 30;
+        person.flag = false;
+        // setTimeout(() => {
+        //   person.name = "李四";
+        //   console.log("修改后不应该执行effect");
+        // });
       }, 1000);
     </script>
   </body>

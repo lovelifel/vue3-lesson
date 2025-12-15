@@ -12,17 +12,16 @@ export function track(target, key) {
     if (!dep) {
       depsMap.set(
         key,
-        (dep = creatMap(() => {
+        (dep = createMap(() => {
           depsMap.delete(key);
         }, key))
       );
     }
-
     trackEffect(activeEffect, dep);
   }
 }
 
-export function creatMap(cleanUp, key) {
+export function createMap(cleanUp, key) {
   const dep = new Map() as any;
   dep.cleanUp = cleanUp;
   dep.name = key;
@@ -30,7 +29,6 @@ export function creatMap(cleanUp, key) {
 }
 
 export function trigger(target, key, oldValue, value) {
-  debugger;
   const depsMap = targetMap.get(target);
   if (!depsMap) {
     return;

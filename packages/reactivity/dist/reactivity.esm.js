@@ -9,7 +9,12 @@ function effect(fn, options) {
   const _effect = new ReactiveEffect(fn, () => {
     _effect.run();
   });
+  console.log(_effect);
   _effect.run();
+}
+function preCleanEffect(effect2) {
+  effect2._depsLength = 0;
+  effect2._trackId++;
 }
 var ReactiveEffect = class {
   //是否开启响应
@@ -29,8 +34,10 @@ var ReactiveEffect = class {
     let lastEffect = activeEffect;
     try {
       activeEffect = this;
+      preCleanEffect(this);
       return this.fn();
     } finally {
+      postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
@@ -39,8 +46,32 @@ var ReactiveEffect = class {
   }
 };
 function trackEffect(effect2, dep) {
-  dep.set(effect2, effect2._trackId);
-  effect2.deps[effect2._depsLength++] = dep;
+  if (dep.get(effect2) !== effect2._trackId) {
+    dep.set(effect2, effect2._trackId);
+  }
+  const oldDep = effect2.deps[effect2._depsLength];
+  if (oldDep != dep) {
+    if (oldDep) {
+      cleanDepEffect(oldDep, effect2);
+    }
+    effect2.deps[effect2._depsLength++] = dep;
+  } else {
+    effect2._depsLength++;
+  }
+}
+function cleanDepEffect(dep, effect2) {
+  dep.delete(effect2);
+  if (dep.size === 0) {
+    dep.cleanUp();
+  }
+}
+function postCleanEffect(effect2) {
+  if (effect2.deps.length > effect2._depsLength) {
+    for (let i = effect2._depsLength; i < effect2.deps.length; i++) {
+      cleanDepEffect(effect2.deps[i], effect2);
+    }
+    effect2._deps.length = effect2._depsLength;
+  }
 }
 
 // packages/reactivity/src/reactiveEffect.ts
@@ -55,7 +86,7 @@ function track(target, key) {
     if (!dep) {
       depsMap.set(
         key,
-        dep = creatMap(() => {
+        dep = createMap(() => {
           depsMap.delete(key);
         }, key)
       );
@@ -63,14 +94,13 @@ function track(target, key) {
     trackEffect(activeEffect, dep);
   }
 }
-function creatMap(cleanUp, key) {
+function createMap(cleanUp, key) {
   const dep = /* @__PURE__ */ new Map();
   dep.cleanUp = cleanUp;
   dep.name = key;
   return dep;
 }
 function trigger(target, key, oldValue, value) {
-  debugger;
   const depsMap = targetMap.get(target);
   if (!depsMap) {
     return;
@@ -129,8 +159,10 @@ function createReactiveObject(target) {
 }
 export {
   activeEffect,
+  cleanDepEffect,
   createReactiveObject,
   effect,
+  postCleanEffect,
   reactive,
   trackEffect
 };
