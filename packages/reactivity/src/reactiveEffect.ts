@@ -1,49 +1,15 @@
-import { activeEffect, trackEffect } from "./effect";
-let targetMap = new WeakMap();
+const targetMap = new WeakMap();
 
+//收集依赖
 export function track(target, key) {
-  if (activeEffect) {
-    let depsMap = targetMap.get(target);
-    if (!depsMap) {
-      targetMap.set(target, (depsMap = new Map()));
-    }
-
-    let dep = depsMap.get(key);
-    if (!dep) {
-      depsMap.set(
-        key,
-        (dep = createMap(() => {
-          depsMap.delete(key);
-        }, key))
-      );
-    }
-    trackEffect(activeEffect, dep);
-  }
-}
-
-export function createMap(cleanUp, key) {
-  const dep = new Map() as any;
-  dep.cleanUp = cleanUp;
-  dep.name = key;
-  return dep;
-}
-
-export function trigger(target, key, oldValue, value) {
-  const depsMap = targetMap.get(target);
+  let depsMap = targetMap.get(target); //判断有没有依赖
   if (!depsMap) {
-    return;
+    targetMap.set(target, (depsMap = new Map()));
   }
 
   let dep = depsMap.get(key);
-  if (dep) {
-    triggerEffects(dep);
+  if (!dep) {
+    depsMap.set(key, (dep = new Map()));
   }
-}
-
-export function triggerEffects(dep) {
-  for (const effect of dep.keys()) {
-    if (effect.scheduler) {
-      effect.scheduler();
-    }
-  }
+  console.log("track", key, targetMap, depsMap, dep);
 }

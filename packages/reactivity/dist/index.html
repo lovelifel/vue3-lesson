@@ -10,22 +10,22 @@
     <script type="module">
       import { reactive, effect } from "./reactivity.esm.js";
 
-      const person = reactive({
+      const state = reactive({
         name: "张三",
         age: 25,
         flag: true,
       });
       effect(() => {
-        app.innerHTML = person.flag ? person.name : person.age;
-        // app.innerHTML = person.name + person.name + person.name;
+        // app.innerHTML = person.flag ? person.name : person.age;
+        app.innerHTML = `${state.name} `;
       });
-      setTimeout(() => {
-        person.flag = false;
-        // setTimeout(() => {
-        //   person.name = "李四";
-        //   console.log("修改后不应该执行effect");
-        // });
-      }, 1000);
+      // setTimeout(() => {
+      //   person.flag = false;
+      //   // setTimeout(() => {
+      //   //   person.name = "李四";
+      //   //   console.log("修改后不应该执行effect");
+      //   // });
+      // }, 1000);
     </script>
   </body>
 </html>

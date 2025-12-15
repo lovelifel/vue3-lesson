@@ -1,25 +1,27 @@
 import { isObject } from "@vue/shared";
 import { baseHandlers, ReactiveFlags } from "./baseHandlers";
+
 const cacheProxyMap = new WeakMap();
 
-export function reactive(target) {
-  return createReactiveObject(target);
+export function reactive(value) {
+  //判断对象类型 非空
+  if (!isObject(value)) {
+    return value;
+  }
+  return createProxyObject(value);
 }
 
-export function createReactiveObject(target) {
-  if (!isObject(target)) {
-    return target;
-  }
-  const existProxy = cacheProxyMap.get(target);
+export function createProxyObject(value) {
+  const existProxy = cacheProxyMap.get(value);
   if (existProxy) {
     return existProxy;
   }
 
-  if (target[ReactiveFlags.IS_REACTIVE]) {
-    return target;
+  if (value[ReactiveFlags.IS_REACTIVE]) {
+    return value;
   }
 
-  const proxy = new Proxy(target, baseHandlers);
-  cacheProxyMap.set(target, proxy);
+  const proxy = new Proxy(value, baseHandlers);
+  cacheProxyMap.set(value, proxy);
   return proxy;
 }
