@@ -8,35 +8,23 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import { reactive, effect } from "./reactivity.esm.js";
-
-      const state = reactive({
-        name: "张三",
-        age: 25,
-        flag: true,
-        address: {
-          n: 1,
-        },
-      });
-
-      let a = effect(() => {
-        app.innerHTML = state.address.n;
-      });
-      setTimeout(() => {
-        state.address.n = 111;
-      }, 2000);
-      // let runner = effect(
-      //   () => {
-      //     app.innerHTML = state.name;
-      //   },
-      //   {
-      //     scheduler: () => {
-      //       console.log("调度器");
-      //       runner();
-      //     },
-      //   }
-      // );
-      // state.name = "李四";
+      import {
+        reactive,
+        effect,
+        ref,
+        toRef,
+        toRefs,
+      } from "./reactivity.esm.js";
+      // import {
+      //   reactive,
+      //   effect,
+      //   ref,
+      //   toRef,
+      //   toRefs,
+      // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
+      const state = reactive({ name: "1231", age: 12 });
+      const { name, age } = toRefs(state);
+      console.log(name.value, age.value);
     </script>
   </body>
 </html>

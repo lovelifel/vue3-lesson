@@ -13,7 +13,7 @@ export function track(target, key) {
   if (!dep) {
     depsMap.set(
       key,
-      (dep = createMap(() => {
+      (dep = createDep(() => {
         depsMap.delete(key);
       }, key))
     );
@@ -21,10 +21,11 @@ export function track(target, key) {
   trackEffect(activeEffect, dep);
 }
 
-export function createMap(cleanUp, key) {
+export function createDep(cleanUp, key) {
   let dep = new Map() as any;
   dep.cleanUp = cleanUp;
   dep.name = key;
+
   return dep;
 }
 

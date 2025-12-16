@@ -92,14 +92,14 @@ function track(target, key) {
   if (!dep) {
     depsMap.set(
       key,
-      dep = createMap(() => {
+      dep = createDep(() => {
         depsMap.delete(key);
       }, key)
     );
   }
   trackEffect(activeEffect, dep);
 }
-function createMap(cleanUp, key) {
+function createDep(cleanUp, key) {
   let dep = /* @__PURE__ */ new Map();
   dep.cleanUp = cleanUp;
   dep.name = key;
@@ -163,14 +163,87 @@ function createProxyObject(value) {
   cacheProxyMap.set(value, proxy);
   return proxy;
 }
+function toReactive(value) {
+  return !isObject(value) ? value : createProxyObject(value);
+}
+
+// packages/reactivity/src/ref.ts
+function ref(value) {
+  return createRef(value);
+}
+function createRef(value) {
+  return new RefImpl(value);
+}
+var RefImpl = class {
+  constructor(rawValue) {
+    this.rawValue = rawValue;
+    this.__v_isRef = true;
+    this._value = toReactive(rawValue);
+  }
+  get value() {
+    trackRefValue(this);
+    return this._value;
+  }
+  set value(newValue) {
+    if (newValue !== this.rawValue) {
+      this.rawValue = newValue;
+      this._value = newValue;
+      triggerRefValue(this);
+    }
+  }
+};
+function trackRefValue(ref2) {
+  if (activeEffect) {
+    trackEffect(
+      activeEffect,
+      ref2.dep = createDep(() => ref2.dep = void 0, "undefined")
+    );
+  }
+}
+function triggerRefValue(ref2) {
+  let dep = ref2.dep;
+  if (dep) {
+    triggerEffects(dep);
+  }
+}
+function toRef(obj, key) {
+  return new ObjectRefImpl(obj, key);
+}
+var ObjectRefImpl = class {
+  constructor(target, key) {
+    this.target = target;
+    this.key = key;
+    this.__v_isRef = true;
+  }
+  get value() {
+    return this.target[this.key];
+  }
+  set value(newValue) {
+    this.target[this.key] = newValue;
+  }
+};
+function toRefs(obj) {
+  const ret = {};
+  for (const key in obj) {
+    ret[key] = toRef(obj, key);
+  }
+  return ret;
+}
 export {
   activeEffect,
   cleanDepEffect,
   createProxyObject,
+  createRef,
   effect,
   postCleanEffect,
   preCleanEffect,
   reactive,
-  trackEffect
+  ref,
+  toReactive,
+  toRef,
+  toRefs,
+  trackEffect,
+  trackRefValue,
+  triggerRefValue
 };
 //# sourceMappingURL=reactivity.esm.js.map

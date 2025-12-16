@@ -24,3 +24,7 @@ export function createProxyObject(value) {
   cacheProxyMap.set(value, proxy);
   return proxy;
 }
+
+export function toReactive(value) {
+  return !isObject(value) ? value : createProxyObject(value);
+}
