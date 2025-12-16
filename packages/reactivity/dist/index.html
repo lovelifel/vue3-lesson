@@ -14,18 +14,29 @@
         name: "张三",
         age: 25,
         flag: true,
+        address: {
+          n: 1,
+        },
       });
-      effect(() => {
-        // app.innerHTML = person.flag ? person.name : person.age;
-        app.innerHTML = `${state.name} `;
+
+      let a = effect(() => {
+        app.innerHTML = state.address.n;
       });
-      // setTimeout(() => {
-      //   person.flag = false;
-      //   // setTimeout(() => {
-      //   //   person.name = "李四";
-      //   //   console.log("修改后不应该执行effect");
-      //   // });
-      // }, 1000);
+      setTimeout(() => {
+        state.address.n = 111;
+      }, 2000);
+      // let runner = effect(
+      //   () => {
+      //     app.innerHTML = state.name;
+      //   },
+      //   {
+      //     scheduler: () => {
+      //       console.log("调度器");
+      //       runner();
+      //     },
+      //   }
+      // );
+      // state.name = "李四";
     </script>
   </body>
 </html>

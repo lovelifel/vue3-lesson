@@ -1,4 +1,6 @@
 import { track, trigger } from "./reactiveEffect";
+import { reactive } from "./reactive";
+import { isObject } from "@vue/shared";
 
 export enum ReactiveFlags {
   IS_REACTIVE = "__v_isReactive",
@@ -7,8 +9,13 @@ export enum ReactiveFlags {
 export const baseHandlers = {
   get(target, key, receiver) {
     if (key === ReactiveFlags.IS_REACTIVE) return true;
+
     track(target, key);
-    return Reflect.get(target, key, receiver);
+    let result = Reflect.get(target, key, receiver);
+    if (isObject(result)) {
+      return reactive(result);
+    }
+    return result;
   },
 
   set(target, key, value, receiver) {

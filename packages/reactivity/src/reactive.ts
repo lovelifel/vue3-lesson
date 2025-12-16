@@ -16,7 +16,6 @@ export function createProxyObject(value) {
   if (existProxy) {
     return existProxy;
   }
-
   if (value[ReactiveFlags.IS_REACTIVE]) {
     return value;
   }

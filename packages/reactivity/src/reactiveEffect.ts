@@ -2,9 +2,9 @@ import { trackEffect, activeEffect } from "./effect";
 
 const targetMap = new WeakMap();
 
-//收集依赖
 export function track(target, key) {
-  let depsMap = targetMap.get(target); //判断有没有依赖
+  if (!activeEffect) return;
+  let depsMap = targetMap.get(target);
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()));
   }
@@ -42,8 +42,10 @@ export function trigger(target, key) {
 
 export function triggerEffects(dep) {
   for (const effect of dep.keys()) {
-    if (effect.scheduler) {
-      effect.scheduler();
+    if (!effect._running) {
+      if (effect.scheduler) {
+        effect.scheduler();
+      }
     }
   }
 }

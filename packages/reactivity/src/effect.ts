@@ -5,6 +5,13 @@ export function effect(fn, options?) {
     _effect.run();
   });
   _effect.run();
+  if (options) {
+    Object.assign(_effect, options);
+  }
+
+  const runner = _effect.run.bind(_effect);
+  runner.effect = _effect;
+  return runner;
 }
 
 class ReactiveEffect {
@@ -12,6 +19,7 @@ class ReactiveEffect {
   _depsLength = 0;
   _trackId = 0;
   active = true;
+  _running = 0;
   constructor(public fn, public scheduler?) {}
   run() {
     if (!this.active) {
@@ -21,8 +29,10 @@ class ReactiveEffect {
     try {
       activeEffect = this;
       preCleanEffect(this);
+      this._running++;
       return this.fn();
     } finally {
+      this._running--;
       postCleanEffect(this);
       activeEffect = lastEffect;
     }

@@ -5,6 +5,12 @@ function effect(fn, options) {
     _effect.run();
   });
   _effect.run();
+  if (options) {
+    Object.assign(_effect, options);
+  }
+  const runner = _effect.run.bind(_effect);
+  runner.effect = _effect;
+  return runner;
 }
 var ReactiveEffect = class {
   constructor(fn, scheduler) {
@@ -14,6 +20,7 @@ var ReactiveEffect = class {
     this._depsLength = 0;
     this._trackId = 0;
     this.active = true;
+    this._running = 0;
   }
   run() {
     if (!this.active) {
@@ -23,8 +30,10 @@ var ReactiveEffect = class {
     try {
       activeEffect = this;
       preCleanEffect(this);
+      this._running++;
       return this.fn();
     } finally {
+      this._running--;
       postCleanEffect(this);
       activeEffect = lastEffect;
     }
@@ -74,6 +83,7 @@ function isObject(value) {
 // packages/reactivity/src/reactiveEffect.ts
 var targetMap = /* @__PURE__ */ new WeakMap();
 function track(target, key) {
+  if (!activeEffect) return;
   let depsMap = targetMap.get(target);
   if (!depsMap) {
     targetMap.set(target, depsMap = /* @__PURE__ */ new Map());
@@ -107,8 +117,10 @@ function trigger(target, key) {
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
-    if (effect2.scheduler) {
-      effect2.scheduler();
+    if (!effect2._running) {
+      if (effect2.scheduler) {
+        effect2.scheduler();
+      }
     }
   }
 }
@@ -118,7 +130,11 @@ var baseHandlers = {
   get(target, key, receiver) {
     if (key === "__v_isReactive" /* IS_REACTIVE */) return true;
     track(target, key);
-    return Reflect.get(target, key, receiver);
+    let result = Reflect.get(target, key, receiver);
+    if (isObject(result)) {
+      return reactive(result);
+    }
+    return result;
   },
   set(target, key, value, receiver) {
     let result = Reflect.set(target, key, value, receiver);
