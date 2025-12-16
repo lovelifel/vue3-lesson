@@ -4,10 +4,11 @@ import { isObject } from "@vue/shared";
 
 export enum ReactiveFlags {
   IS_REACTIVE = "__v_isReactive",
+  IS_REF = "__v_isRef",
 }
 
 export const baseHandlers = {
-  get(target, key, receiver) {
+  get(target: any, key: any, receiver: any) {
     if (key === ReactiveFlags.IS_REACTIVE) return true;
 
     track(target, key);

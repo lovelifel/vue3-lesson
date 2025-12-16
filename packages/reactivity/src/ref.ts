@@ -66,3 +66,21 @@ export function toRefs(obj) {
   }
   return ret;
 }
+
+export function proxyRefs(target) {
+  return new Proxy(target, {
+    get(target, key, receiver) {
+      const original = Reflect.get(target, key, receiver);
+      return original.__v_isRef ? original.value : original;
+    },
+
+    set(target, key, value, receiver) {
+      const oldValue = target[key];
+      if (oldValue.__v_isRef) {
+        oldValue.value = value;
+      } else {
+        return Reflect.set(target, key, value, receiver);
+      }
+    },
+  });
+}

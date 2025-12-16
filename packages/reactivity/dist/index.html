@@ -14,6 +14,7 @@
         ref,
         toRef,
         toRefs,
+        proxyRefs,
       } from "./reactivity.esm.js";
       // import {
       //   reactive,
@@ -24,7 +25,8 @@
       // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
       const state = reactive({ name: "1231", age: 12 });
       const { name, age } = toRefs(state);
-      console.log(name.value, age.value);
+      const proxyState = proxyRefs(state);
+      console.log(proxyState.name, proxyState.age);
     </script>
   </body>
 </html>

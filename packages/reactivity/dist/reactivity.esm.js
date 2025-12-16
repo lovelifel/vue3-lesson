@@ -229,6 +229,22 @@ function toRefs(obj) {
   }
   return ret;
 }
+function proxyRefs(target) {
+  return new Proxy(target, {
+    get(target2, key, receiver) {
+      const original = Reflect.get(target2, key, receiver);
+      return original.__v_isRef ? original.value : original;
+    },
+    set(target2, key, value, receiver) {
+      const oldValue = target2[key];
+      if (oldValue.__v_isRef) {
+        oldValue.value = value;
+      } else {
+        return Reflect.set(target2, key, value, receiver);
+      }
+    }
+  });
+}
 export {
   activeEffect,
   cleanDepEffect,
@@ -237,6 +253,7 @@ export {
   effect,
   postCleanEffect,
   preCleanEffect,
+  proxyRefs,
   reactive,
   ref,
   toReactive,
