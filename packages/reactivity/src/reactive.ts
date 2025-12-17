@@ -1,5 +1,6 @@
 import { isObject } from "@vue/shared";
-import { baseHandlers, ReactiveFlags } from "./baseHandlers";
+import { baseHandlers } from "./baseHandlers";
+import { ReactiveFlags } from "./constants";
 
 const cacheProxyMap = new WeakMap();
 

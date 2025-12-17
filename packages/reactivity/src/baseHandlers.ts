@@ -1,11 +1,7 @@
 import { track, trigger } from "./reactiveEffect";
 import { reactive } from "./reactive";
 import { isObject } from "@vue/shared";
-
-export enum ReactiveFlags {
-  IS_REACTIVE = "__v_isReactive",
-  IS_REF = "__v_isRef",
-}
+import { ReactiveFlags } from "./constants";
 
 export const baseHandlers = {
   get(target: any, key: any, receiver: any) {
@@ -25,3 +21,4 @@ export const baseHandlers = {
     return result;
   },
 };
+export { ReactiveFlags };

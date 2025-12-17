@@ -1,3 +1,4 @@
+import { DirtyLevels } from "./constants";
 import { trackEffect, activeEffect } from "./effect";
 
 const targetMap = new WeakMap();
@@ -43,6 +44,9 @@ export function trigger(target, key) {
 
 export function triggerEffects(dep) {
   for (const effect of dep.keys()) {
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty;
+    }
     if (!effect._running) {
       if (effect.scheduler) {
         effect.scheduler();

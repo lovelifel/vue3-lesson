@@ -1,3 +1,5 @@
+import { DirtyLevels } from "./constants";
+
 export let activeEffect = undefined;
 
 export function effect(fn, options?) {
@@ -14,14 +16,25 @@ export function effect(fn, options?) {
   return runner;
 }
 
-class ReactiveEffect {
+export class ReactiveEffect {
   deps = [];
   _depsLength = 0;
   _trackId = 0;
-  active = true;
+  public active = true;
+  _dirtyLevel = DirtyLevels.Dirty;
   _running = 0;
   constructor(public fn, public scheduler?) {}
+
+  public get dirty() {
+    return this._dirtyLevel === DirtyLevels.Dirty;
+  }
+
+  public set dirty(value) {
+    this._dirtyLevel = value ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
+  }
+
   run() {
+    this._dirtyLevel = DirtyLevels.NoDirty;
     if (!this.active) {
       return this.fn();
     }

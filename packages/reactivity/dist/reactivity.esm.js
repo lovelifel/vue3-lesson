@@ -20,9 +20,17 @@ var ReactiveEffect = class {
     this._depsLength = 0;
     this._trackId = 0;
     this.active = true;
+    this._dirtyLevel = 4 /* Dirty */;
     this._running = 0;
   }
+  get dirty() {
+    return this._dirtyLevel === 4 /* Dirty */;
+  }
+  set dirty(value) {
+    this._dirtyLevel = value ? 4 /* Dirty */ : 0 /* NoDirty */;
+  }
   run() {
+    this._dirtyLevel = 0 /* NoDirty */;
     if (!this.active) {
       return this.fn();
     }
@@ -79,6 +87,9 @@ function cleanDepEffect(dep, effect2) {
 function isObject(value) {
   return typeof value === "object" && value !== null;
 }
+function isFunction(value) {
+  return typeof value === "function";
+}
 
 // packages/reactivity/src/reactiveEffect.ts
 var targetMap = /* @__PURE__ */ new WeakMap();
@@ -117,6 +128,9 @@ function trigger(target, key) {
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
+    if (effect2._dirtyLevel < 4 /* Dirty */) {
+      effect2._dirtyLevel = 4 /* Dirty */;
+    }
     if (!effect2._running) {
       if (effect2.scheduler) {
         effect2.scheduler();
@@ -245,9 +259,48 @@ function proxyRefs(target) {
     }
   });
 }
+
+// packages/reactivity/src/computed.ts
+function computed(getterOrOptions) {
+  let getter;
+  let setter;
+  if (isFunction(getterOrOptions)) {
+    getter = getterOrOptions;
+    setter = () => {
+    };
+  } else {
+    getter = getterOrOptions.get;
+    setter = getterOrOptions.set;
+  }
+  return new ComputedRefImpl(getter, setter);
+}
+var ComputedRefImpl = class {
+  constructor(getter, setter) {
+    this.getter = getter;
+    this.setter = setter;
+    this.effect = new ReactiveEffect(
+      () => getter(this._value),
+      () => {
+        triggerRefValue(this);
+      }
+    );
+  }
+  get value() {
+    if (this.effect.dirty) {
+      this._value = this.effect.run();
+      trackRefValue(this);
+    }
+    return this._value;
+  }
+  set value(newValue) {
+    this.setter(newValue);
+  }
+};
 export {
+  ReactiveEffect,
   activeEffect,
   cleanDepEffect,
+  computed,
   createProxyObject,
   createRef,
   effect,

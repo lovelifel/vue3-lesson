@@ -8,25 +8,34 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import {
-        reactive,
-        effect,
-        ref,
-        toRef,
-        toRefs,
-        proxyRefs,
-      } from "./reactivity.esm.js";
+      import { reactive, effect, ref, computed } from "./reactivity.esm.js";
       // import {
       //   reactive,
       //   effect,
       //   ref,
       //   toRef,
       //   toRefs,
+      //   computed,
       // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
-      const state = reactive({ name: "1231", age: 12 });
-      const { name, age } = toRefs(state);
-      const proxyState = proxyRefs(state);
-      console.log(proxyState.name, proxyState.age);
+
+      const state = reactive({
+        name: "张三",
+      });
+      const name = computed({
+        get() {
+          return state.name;
+        },
+        set(value) {
+          state.name = value;
+        },
+      });
+      effect(() => {
+        app.innerHTML = name.value;
+      });
+      // console.log(computed);
+      // setTimeout(() => {
+      //   state.name = "李四";
+      // }, 1000);
     </script>
   </body>
 </html>
