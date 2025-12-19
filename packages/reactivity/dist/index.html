@@ -8,7 +8,14 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import { reactive, effect, ref, computed } from "./reactivity.esm.js";
+      import {
+        reactive,
+        effect,
+        ref,
+        computed,
+        watch,
+        watchEffect,
+      } from "./reactivity.esm.js";
       // import {
       //   reactive,
       //   effect,
@@ -16,26 +23,26 @@
       //   toRef,
       //   toRefs,
       //   computed,
-      // } from "/node_modules/@vue/reactivity/dist/reactivity.esm-browser.js";
-
+      //   watch,
+      //   watchEffect,
+      // } from "/node_modules/vue/dist/vue.esm-browser.js";
       const state = reactive({
         name: "张三",
+        age: "20",
+        address: { city: "北京" },
       });
-      const name = computed({
-        get() {
-          return state.name;
-        },
-        set(value) {
-          state.name = value;
-        },
+
+      // watch(
+      //   state,
+      //   (val) => console.log("变化了", val),
+      //   { deep: true, immediate: true } // 开启深度监听，触发 traverse
+      // );
+      watchEffect(() => {
+        console.log(state.name);
       });
-      effect(() => {
-        app.innerHTML = name.value;
-      });
-      // console.log(computed);
-      // setTimeout(() => {
-      //   state.name = "李四";
-      // }, 1000);
+      setTimeout(() => {
+        state.name = "李四";
+      }, 2000);
     </script>
   </body>
 </html>

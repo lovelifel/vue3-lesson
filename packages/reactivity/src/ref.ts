@@ -84,3 +84,7 @@ export function proxyRefs(target) {
     },
   });
 }
+
+export function isRef(value) {
+  return value.__v_isRef === true;
+}

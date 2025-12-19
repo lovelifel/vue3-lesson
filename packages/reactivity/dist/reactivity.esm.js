@@ -180,6 +180,9 @@ function createProxyObject(value) {
 function toReactive(value) {
   return !isObject(value) ? value : createProxyObject(value);
 }
+function isReactive(value) {
+  return !!(value && value["__v_isReactive" /* IS_REACTIVE */]);
+}
 
 // packages/reactivity/src/ref.ts
 function ref(value) {
@@ -259,6 +262,9 @@ function proxyRefs(target) {
     }
   });
 }
+function isRef(value) {
+  return value.__v_isRef === true;
+}
 
 // packages/reactivity/src/computed.ts
 function computed(getterOrOptions) {
@@ -296,6 +302,62 @@ var ComputedRefImpl = class {
     this.setter(newValue);
   }
 };
+
+// packages/reactivity/src/apiWatch.ts
+function watch(source, cb, options) {
+  return doWatch(source, cb, options);
+}
+function doWatch(source, cb, { deep, immediate }) {
+  const reactiveGetter = (source2) => traverse(source2, deep === false ? 1 : void 0);
+  let getter;
+  if (isReactive(source)) {
+    getter = () => reactiveGetter(source);
+  } else if (isRef(source)) {
+    getter = () => source.value;
+  } else if (isFunction(source)) {
+    getter = source;
+  } else {
+    getter = () => source;
+  }
+  let oldValue;
+  const job = () => {
+    if (cb) {
+      const newValue = effect2.run();
+      cb(newValue, oldValue);
+      oldValue = newValue;
+    } else {
+      effect2.run();
+    }
+  };
+  const effect2 = new ReactiveEffect(getter, job);
+  if (cb) {
+    if (immediate) {
+      job();
+    } else {
+      oldValue = effect2.run();
+    }
+  } else {
+    effect2.run();
+  }
+}
+function traverse(source, depth, currentDepth = 0, seen = /* @__PURE__ */ new Set()) {
+  if (!isObject(source)) return;
+  if (depth) {
+    if (currentDepth >= depth) {
+      return source;
+    }
+    currentDepth++;
+  }
+  if (seen.has(source)) return source;
+  seen.add(source);
+  for (const key in source) {
+    traverse(source[key], depth, currentDepth, seen);
+  }
+  return source;
+}
+function watchEffect(source, options = {}) {
+  return doWatch(source, null, options);
+}
 export {
   ReactiveEffect,
   activeEffect,
@@ -303,7 +365,10 @@ export {
   computed,
   createProxyObject,
   createRef,
+  doWatch,
   effect,
+  isReactive,
+  isRef,
   postCleanEffect,
   preCleanEffect,
   proxyRefs,
@@ -314,6 +379,8 @@ export {
   toRefs,
   trackEffect,
   trackRefValue,
-  triggerRefValue
+  triggerRefValue,
+  watch,
+  watchEffect
 };
 //# sourceMappingURL=reactivity.esm.js.map
