@@ -43,6 +43,12 @@ export function doWatch(source, cb, { deep, immediate }) {
   } else {
     effect.run();
   }
+
+  const unwatch = () => {
+    effect.stop();
+  };
+
+  return unwatch;
 }
 
 function traverse(source, depth, currentDepth = 0, seen = new Set()) {

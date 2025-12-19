@@ -47,7 +47,11 @@ var ReactiveEffect = class {
     }
   }
   stop() {
-    this.active = false;
+    if (this.active) {
+      this.active = false;
+      postCleanEffect(this);
+      preCleanEffect(this);
+    }
   }
 };
 function trackEffect(effect2, dep) {
@@ -339,6 +343,10 @@ function doWatch(source, cb, { deep, immediate }) {
   } else {
     effect2.run();
   }
+  const unwatch = () => {
+    effect2.stop();
+  };
+  return unwatch;
 }
 function traverse(source, depth, currentDepth = 0, seen = /* @__PURE__ */ new Set()) {
   if (!isObject(source)) return;
