@@ -33,7 +33,8 @@ export function trackRefValue(ref) {
   if (activeEffect) {
     trackEffect(
       activeEffect,
-      (ref.dep = createDep(() => (ref.dep = undefined), "undefined"))
+      (ref.dep =
+        ref.dep || createDep(() => (ref.dep = undefined), "undefined")),
     );
   }
 }
@@ -50,7 +51,10 @@ export function toRef(obj, key) {
 
 class ObjectRefImpl {
   public __v_isRef = true;
-  constructor(public target, public key) {}
+  constructor(
+    public target,
+    public key,
+  ) {}
   get value() {
     return this.target[this.key];
   }
