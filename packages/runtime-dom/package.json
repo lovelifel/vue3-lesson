@@ -16,6 +16,7 @@
     ]
   },
   "dependencies": {
+    "@vue/reactivity": "workspace:*",
     "@vue/shared": "workspace:*"
   }
 }
