@@ -1,3 +1,95 @@
+// packages/runtime-dom/src/nodeOps.ts
+var nodeOps = {
+  createElement(tagName) {
+    return document.createElement(tagName);
+  },
+  createTextNode(text) {
+    return document.createTextNode(text);
+  },
+  insert(child, parent, anchor) {
+    parent.insertBefore(child, anchor);
+  },
+  remove(child) {
+    child.parentNode?.removeChild(child);
+  },
+  setElementText(el, text) {
+    el.textContent = text;
+  }
+};
+
+// packages/runtime-dom/src/modules/patchClass.ts
+var patchClass = (el, value) => {
+  if (value == null) {
+    el.removeAttribute("class");
+  } else {
+    el.className = value;
+  }
+};
+
+// packages/runtime-dom/src/modules/patchStyle.ts
+var patchStyle = (el, prevValue, nextValue) => {
+  let style = el.style;
+  if (prevValue) {
+    for (let key in prevValue) {
+      if (nextValue[key] == null) {
+        style[key] = null;
+      }
+    }
+  }
+  if (nextValue) {
+    for (let key in nextValue) {
+      style[key] = nextValue[key];
+    }
+  }
+};
+
+// packages/runtime-dom/src/modules/patchEvent.ts
+var createInvoker = (handler) => {
+  const invoker = (e) => {
+    invoker.value(e);
+  };
+  invoker.value = handler;
+  return invoker;
+};
+var patchEvent = (el, name, handler) => {
+  const invokers = el._vei || (el._vei = {});
+  const eventName = name.slice(2).toLowerCase();
+  const existingInvoker = invokers[eventName];
+  if (handler && existingInvoker) {
+    return existingInvoker.value = handler;
+  }
+  if (handler) {
+    const invoker = invokers[name] = createInvoker(handler);
+    return el.addEventListener(eventName, invoker);
+  }
+  if (existingInvoker) {
+    el.removeEventListener(eventName, existingInvoker);
+    invokers[eventName] = null;
+  }
+};
+
+// packages/runtime-dom/src/modules/patchAttr.ts
+var patchAttr = (el, key, value) => {
+  if (value == null) {
+    el.removeAttribute(key);
+  } else {
+    el.setAttribute(key, value);
+  }
+};
+
+// packages/runtime-dom/src/patchProp.ts
+function patchProp(el, key, prevValue, nextValue) {
+  if (key === "class") {
+    patchClass(el, nextValue);
+  } else if (key === "style") {
+    patchStyle(el, prevValue, nextValue);
+  } else if (key.startsWith("on")) {
+    patchEvent(el, key, nextValue);
+  } else {
+    patchAttr(el, key, nextValue);
+  }
+}
+
 // packages/reactivity/src/effect.ts
 var activeEffect = void 0;
 function effect(fn, options) {
@@ -366,6 +458,9 @@ function traverse(source, depth, currentDepth = 0, seen = /* @__PURE__ */ new Se
 function watchEffect(source, options = {}) {
   return doWatch(source, null, options);
 }
+
+// packages/runtime-dom/src/index.ts
+var renderOptions = Object.assign({ patchProp }, nodeOps);
 export {
   ReactiveEffect,
   activeEffect,
@@ -382,6 +477,7 @@ export {
   proxyRefs,
   reactive,
   ref,
+  renderOptions,
   toReactive,
   toRef,
   toRefs,
